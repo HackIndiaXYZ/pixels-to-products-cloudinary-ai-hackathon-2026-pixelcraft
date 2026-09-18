@@ -3,35 +3,20 @@
 import { useState } from "react";
 import { CldImage, CldUploadWidget } from "next-cloudinary";
 
-const scenes = [
-  {
-    name: "Studio",
-    prompt:
-      "professional white studio with a clean seamless backdrop and softbox lighting with a subtle product shadow for bright commercial catalog photography",
-  },
-  {
-    name: "Luxury",
-    prompt:
-      "dark luxury marble countertop with warm golden lighting and an elegant premium interior with dramatic shadows for high end advertising photography",
-  },
-  {
-    name: "Minimal",
-    prompt:
-      "modern pastel geometric background with smooth curved surfaces and soft daylight with a clean contemporary product advertisement",
-  },
-  {
-    name: "Lifestyle",
-    prompt:
-      "realistic modern desk environment beside a laptop and coffee cup with natural window sunlight and a cozy workspace for authentic lifestyle product photography",
-  },
+const examplePrompts = [
+  "Create a clean white studio background with soft lighting and a subtle product shadow for a professional catalog photo",
+  "Place the product on a dark luxury marble surface with warm golden lighting and a premium atmosphere",
+  "Create a modern pastel background with smooth geometric shapes and soft daylight for a stylish product advertisement",
+  "Place the product in a cozy modern workspace with natural window sunlight and realistic lifestyle surroundings",
 ];
 
 export default function Home() {
   const [imageUrl, setImageUrl] = useState("");
   const [publicId, setPublicId] = useState("");
-  const [selectedScene, setSelectedScene] = useState("");
-  const [selectedPrompt, setSelectedPrompt] = useState("");
+  const [prompt, setPrompt] = useState("");
   const [generateImage, setGenerateImage] = useState(false);
+
+  const hasInvalidPunctuation = /[,.]/.test(prompt);
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -124,53 +109,75 @@ export default function Home() {
             </div>
           )}
 
-          {/* Scene Selection */}
+          {/* Prompt */}
           {imageUrl && (
             <div className="mt-10">
               <h2 className="text-2xl font-semibold">
-                Choose a scene
+                Describe your scene
               </h2>
 
               <p className="mt-2 text-sm text-slate-400">
-                Select a style for your professional product image.
+                Tell AI how you want your product to look.
               </p>
 
-              <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {scenes.map((scene) => (
-                  <button
-                    key={scene.name}
-                    type="button"
-                    onClick={() => {
-                      setSelectedScene(scene.name);
-                      setSelectedPrompt(scene.prompt);
-                      setGenerateImage(false);
-                    }}
-                    className={`rounded-2xl border p-5 text-left transition ${
-                      selectedScene === scene.name
-                        ? "border-cyan-400 bg-cyan-400/10"
-                        : "border-slate-700 bg-slate-950 hover:border-slate-500"
-                    }`}
-                  >
-                    <h3 className="text-lg font-semibold">
-                      {scene.name}
-                    </h3>
+              <div className="mt-4 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-left">
+              <p className="text-sm text-yellow-300">
+                ⚠️ Avoid commas (,) and full stops (.) in your prompt
+              </p>
+            </div>
 
-                    <p className="mt-2 text-sm text-slate-400">
-                      {scene.prompt}
-                    </p>
-                  </button>
-                ))}
+              {/* Prompt Input */}
+              <textarea
+  value={prompt}
+  onChange={(e) => {
+    setPrompt(e.target.value);
+    setGenerateImage(false);
+  }}
+  placeholder="Example: Place this product on a luxury marble table with warm golden lighting and a premium atmosphere"
+  rows={5}
+  className="mt-5 w-full resize-none rounded-2xl border border-slate-700 bg-slate-950 p-5 text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400"
+/>
+
+{hasInvalidPunctuation && (
+  <div className="mt-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3">
+    <p className="text-sm text-red-300">
+      ⚠️ Your prompt contains a comma or full stop. Please remove it before generating.
+    </p>
+  </div>
+)}
+
+              {/* Example Prompts */}
+              <div className="mt-5">
+                <p className="mb-3 text-sm font-medium text-slate-400">
+                  Try an example
+                </p>
+
+                <div className="space-y-2">
+                  {examplePrompts.map((example, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => {
+                        setPrompt(example);
+                        setGenerateImage(false);
+                      }}
+                      className="w-full rounded-xl border border-slate-800 bg-slate-950 p-3 text-left text-sm text-slate-400 transition hover:border-cyan-400/50 hover:text-white"
+                    >
+                      {example}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              {/* Selected Scene */}
-              {selectedScene && (
-                <div className="mt-6 rounded-2xl border border-slate-700 bg-slate-950 p-5">
+              {/* Prompt Preview */}
+              {prompt.trim() && (
+                <div className="mt-5 rounded-2xl border border-slate-700 bg-slate-950 p-5">
                   <p className="text-sm text-slate-500">
-                    Selected scene
+                    Your AI instruction
                   </p>
 
-                  <p className="mt-1 text-lg font-semibold text-cyan-400">
-                    {selectedScene}
+                  <p className="mt-2 text-sm leading-6 text-cyan-300">
+                    {prompt}
                   </p>
                 </div>
               )}
@@ -178,17 +185,17 @@ export default function Home() {
               {/* Generate Button */}
               <button
                 type="button"
-                disabled={!selectedScene}
+                disabled={!prompt.trim() || hasInvalidPunctuation}
                 onClick={() => setGenerateImage(true)}
                 className="mt-6 w-full rounded-2xl bg-cyan-500 px-6 py-4 text-lg font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Generate Professional Visual
+                ✨ Generate Professional Visual
               </button>
             </div>
           )}
 
           {/* AI Generated Result */}
-          {generateImage && publicId && selectedPrompt && (
+          {generateImage && publicId && prompt.trim() && (
             <div className="mt-10">
               <h2 className="mb-4 text-2xl font-semibold">
                 AI Generated Visual
@@ -200,7 +207,7 @@ export default function Home() {
                   width={1080}
                   height={1080}
                   alt="AI generated product visual"
-                  replaceBackground={selectedPrompt}
+                  replaceBackground={prompt}
                   crop="fill"
                   gravity="auto"
                   quality="auto"
