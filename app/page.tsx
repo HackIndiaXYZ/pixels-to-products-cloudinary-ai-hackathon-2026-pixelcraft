@@ -128,23 +128,23 @@ export default function Home() {
 
               {/* Prompt Input */}
               <textarea
-  value={prompt}
-  onChange={(e) => {
-    setPrompt(e.target.value);
-    setGenerateImage(false);
-  }}
-  placeholder="Example: Place this product on a luxury marble table with warm golden lighting and a premium atmosphere"
-  rows={5}
-  className="mt-5 w-full resize-none rounded-2xl border border-slate-700 bg-slate-950 p-5 text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400"
-/>
+                value={prompt}
+                onChange={(e) => {
+                setPrompt(e.target.value);
+                setGenerateImage(false);
+                }}
+                placeholder="Example: Place this product on a luxury marble table with warm golden lighting and a premium atmosphere"
+                rows={5}
+                className="mt-5 w-full resize-none rounded-2xl border border-slate-700 bg-slate-950 p-5 text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400"
+              />
 
-{hasInvalidPunctuation && (
-  <div className="mt-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3">
-    <p className="text-sm text-red-300">
-      ⚠️ Your prompt contains a comma or full stop. Please remove it before generating.
-    </p>
-  </div>
-)}
+              {hasInvalidPunctuation && (
+                <div className="mt-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3">
+                  <p className="text-sm text-red-300">
+                    ⚠️ Your prompt contains a comma or full stop. Please remove it before generating.
+                  </p>
+                </div>
+              )}
 
               {/* Example Prompts */}
               <div className="mt-5">
@@ -198,7 +198,7 @@ export default function Home() {
           {generateImage && publicId && prompt.trim() && (
             <div className="mt-10">
               <h2 className="mb-4 text-2xl font-semibold">
-                AI Generated Visual
+                1:1 Product Listing
               </h2>
 
               <div className="overflow-hidden rounded-2xl border border-cyan-400/30 bg-slate-950">
@@ -216,6 +216,48 @@ export default function Home() {
                 />
               </div>
 
+              <div className="mt-8">
+                <h3 className="mb-4 text-xl font-semibold">
+                  9:16 Story
+                </h3>
+
+                <div className="mx-auto max-w-md overflow-hidden rounded-2xl border border-cyan-400/30 bg-slate-950">
+                  <CldImage
+                    src={publicId}
+                    width={1080}
+                    height={1920}
+                    alt="9:16 story product visual"
+                    replaceBackground={prompt}
+                    crop="fill"
+                    gravity="auto"
+                    quality="auto"
+                    format="auto"
+                    className="h-auto w-full"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-8">
+                <h3 className="mb-4 text-xl font-semibold">
+                  16:9 Web Banner
+                </h3>
+
+                <div className="overflow-hidden rounded-2xl border border-cyan-400/30 bg-slate-950">
+                  <CldImage
+                    src={publicId}
+                    width={1920}
+                    height={1080}
+                    alt="16:9 web banner product visual"
+                    replaceBackground={prompt}
+                    crop="fill"
+                    gravity="auto"
+                    quality="auto"
+                    format="auto"
+                    className="h-auto w-full"
+                  />
+                </div>
+              </div>
+                
               <p className="mt-3 text-center text-sm text-slate-500">
                 Generated with Cloudinary AI
               </p>
