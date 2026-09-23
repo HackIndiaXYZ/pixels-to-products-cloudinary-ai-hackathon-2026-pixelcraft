@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CldImage, CldUploadWidget, getCldImageUrl } from "next-cloudinary";
+import JSZip from "jszip";
 
 const examplePrompts = [
   "Create a clean white studio background with soft lighting and a subtle product shadow for a professional catalog photo",
@@ -284,7 +285,7 @@ const currentFormat = formatConfig[selectedFormat];
           className="h-auto w-full"
         />
           </div>
-            <div className="mt-4 flex justify-center">
+            <div className="mt-4 flex flex-wrap justify-center gap-3">
               <button
                 type="button"
                 onClick={() => {
@@ -305,6 +306,66 @@ const currentFormat = formatConfig[selectedFormat];
             className="rounded-xl bg-cyan-500 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400"
           >
             ⬇ Download Image
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+  const formats = [
+    {
+      name: "ai-catalog-product-listing.webp",
+      width: 1080,
+      height: 1080,
+    },
+    {
+      name: "ai-catalog-story.webp",
+      width: 1080,
+      height: 1920,
+    },
+    {
+      name: "ai-catalog-web-banner.webp",
+      width: 1920,
+      height: 1080,
+    },
+  ];
+
+  const zip = new JSZip();
+
+  for (const format of formats) {
+    const imageUrl = getCldImageUrl({
+      src: publicId,
+      width: format.width,
+      height: format.height,
+      rawTransformations: [
+        "e_background_removal",
+        `c_pad,w_${format.width},h_${format.height},g_center,b_transparent`,
+        `e_gen_background_replace:prompt_${prompt}`,
+      ],
+      quality: "auto",
+      format: "auto",
+    });
+
+    const response = await fetch(imageUrl);
+    const imageBlob = await response.blob();
+
+    zip.file(format.name, imageBlob);
+  }
+
+  const zipBlob = await zip.generateAsync({
+    type: "blob",
+  });
+
+  const downloadUrl = URL.createObjectURL(zipBlob);
+
+  const link = document.createElement("a");
+  link.href = downloadUrl;
+  link.download = "ai-catalog-formats.zip";
+  link.click();
+
+  URL.revokeObjectURL(downloadUrl);
+}}
+            className="rounded-xl border border-cyan-400/40 bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:border-cyan-400 hover:bg-slate-800"
+          >
+            📦 Download All Formats
           </button>
             </div>
             <p className="mt-3 text-center text-sm text-slate-500">
