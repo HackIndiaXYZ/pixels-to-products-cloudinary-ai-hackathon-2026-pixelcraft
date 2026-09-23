@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CldImage, CldUploadWidget } from "next-cloudinary";
+import { CldImage, CldUploadWidget, getCldImageUrl } from "next-cloudinary";
 
 const examplePrompts = [
   "Create a clean white studio background with soft lighting and a subtle product shadow for a professional catalog photo",
@@ -15,8 +15,29 @@ export default function Home() {
   const [publicId, setPublicId] = useState("");
   const [prompt, setPrompt] = useState("");
   const [generateImage, setGenerateImage] = useState(false);
-
+  const [selectedFormat, setSelectedFormat] = useState<"1:1" | "9:16" | "16:9">("1:1");
+  const [formatMenuOpen, setFormatMenuOpen] = useState(false);
   const hasInvalidPunctuation = /[,.]/.test(prompt);
+
+  const formatConfig = {
+  "1:1": {
+    title: "1:1 Product Listing",
+    width: 1080,
+    height: 1080,
+  },
+  "9:16": {
+    title: "9:16 Story",
+    width: 1080,
+    height: 1920,
+  },
+  "16:9": {
+    title: "16:9 Web Banner",
+    width: 1920,
+    height: 1080,
+  },
+} as const;
+
+const currentFormat = formatConfig[selectedFormat];
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -196,73 +217,102 @@ export default function Home() {
 
           {/* AI Generated Result */}
           {generateImage && publicId && prompt.trim() && (
-            <div className="mt-10">
-              <h2 className="mb-4 text-2xl font-semibold">
-                1:1 Product Listing
+          <div className="relative">
+            {/* Title + Format Button */}
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <h2 className="text-2xl font-semibold">
+                {currentFormat.title}
               </h2>
 
-              <div className="overflow-hidden rounded-2xl border border-cyan-400/30 bg-slate-950">
-                <CldImage
-                  src={publicId}
-                  width={1080}
-                  height={1080}
-                  alt="AI generated product visual"
-                  replaceBackground={prompt}
-                  crop="fill"
-                  gravity="auto"
-                  quality="auto"
-                  format="auto"
-                  className="h-auto w-full"
-                />
-              </div>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setFormatMenuOpen(!formatMenuOpen)}
+                className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:border-cyan-400"
+              >
+                {selectedFormat} ▼
+              </button>
 
-              <div className="mt-8">
-                <h3 className="mb-4 text-xl font-semibold">
-                  9:16 Story
-                </h3>
+              {formatMenuOpen && (
+                <div className="absolute right-0 z-20 mt-2 w-48 overflow-hidden rounded-xl border border-slate-700 bg-slate-900 shadow-xl">
+                  {(["1:1", "9:16", "16:9"] as const).map((format) => (
+                    <button
+                      key={format}
+                      type="button"
+                      onClick={() => {
+                      setSelectedFormat(format);
+                      setFormatMenuOpen(false);
+                  }}
+                  className={`block w-full px-4 py-3 text-left text-sm transition ${
+                    selectedFormat === format
+                      ? "bg-cyan-500 text-slate-950"
+                      : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                }`}
+              >
+                {format} · {formatConfig[format].title.split(" ").slice(1).join(" ")}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
 
-                <div className="mx-auto max-w-md overflow-hidden rounded-2xl border border-cyan-400/30 bg-slate-950">
-                  <CldImage
-                    src={publicId}
-                    width={1080}
-                    height={1920}
-                    alt="9:16 story product visual"
-                    replaceBackground={prompt}
-                    crop="fill"
-                    gravity="auto"
-                    quality="auto"
-                    format="auto"
-                    className="h-auto w-full"
-                  />
-                </div>
-              </div>
+    {/* Dynamic Preview */}
+      <div
+        className="mx-auto overflow-hidden rounded-2xl border border-cyan-400/30 bg-slate-950"
+        style={{
+          maxWidth:
+            selectedFormat === "9:16"
+              ? "360px"
+              : selectedFormat === "16:9"
+                ? "100%"
+                : "520px",
+        }}
+      >
+        <CldImage
+          src={publicId}
+          width={currentFormat.width}
+          height={currentFormat.height}
+          alt={`${currentFormat.title} product visual`}
+          rawTransformations={[
+            "e_background_removal",
+            `c_pad,w_${currentFormat.width},h_${currentFormat.height},g_center,b_transparent`,
+            `e_gen_background_replace:prompt_${prompt}`,
+          ]}
+          quality="auto"
+          format="auto"
+          className="h-auto w-full"
+        />
+          </div>
+            <div className="mt-4 flex justify-center">
+              <button
+                type="button"
+                onClick={() => {
+                  const downloadUrl = getCldImageUrl({
+                  src: publicId,
+                  width: currentFormat.width,
+                  height: currentFormat.height,
+                  rawTransformations: [
+                    "e_background_removal",
+                  `c_pad,w_${currentFormat.width},h_${currentFormat.height},g_center,b_transparent`,
+                  `e_gen_background_replace:prompt_${prompt}`,
+                  "fl_attachment",
+                ],
+              });
 
-              <div className="mt-8">
-                <h3 className="mb-4 text-xl font-semibold">
-                  16:9 Web Banner
-                </h3>
-
-                <div className="overflow-hidden rounded-2xl border border-cyan-400/30 bg-slate-950">
-                  <CldImage
-                    src={publicId}
-                    width={1920}
-                    height={1080}
-                    alt="16:9 web banner product visual"
-                    replaceBackground={prompt}
-                    crop="fill"
-                    gravity="auto"
-                    quality="auto"
-                    format="auto"
-                    className="h-auto w-full"
-                  />
-                </div>
-              </div>
-                
-              <p className="mt-3 text-center text-sm text-slate-500">
-                Generated with Cloudinary AI
-              </p>
+              window.open(downloadUrl, "_blank");
+            }}
+            className="rounded-xl bg-cyan-500 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400"
+          >
+            ⬇ Download Image
+          </button>
             </div>
-          )}
+            <p className="mt-3 text-center text-sm text-slate-500">
+              {selectedFormat} format · Generated with Cloudinary AI
+            </p>
+          </div>
+        )}
+
         </div>
 
         <p className="mt-8 text-sm text-slate-600">
