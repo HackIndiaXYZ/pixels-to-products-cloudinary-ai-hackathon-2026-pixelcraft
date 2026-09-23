@@ -16,6 +16,8 @@ export default function Home() {
   const [publicId, setPublicId] = useState("");
   const [prompt, setPrompt] = useState("");
   const [generateImage, setGenerateImage] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState("");
   const [selectedFormat, setSelectedFormat] = useState<"1:1" | "9:16" | "16:9">("1:1");
   const [formatMenuOpen, setFormatMenuOpen] = useState(false);
   const hasInvalidPunctuation = /[,.]/.test(prompt);
@@ -207,15 +209,23 @@ const currentFormat = formatConfig[selectedFormat];
               {/* Generate Button */}
               <button
                 type="button"
-                disabled={!prompt.trim() || hasInvalidPunctuation}
-                onClick={() => setGenerateImage(true)}
+                disabled={!prompt.trim() || hasInvalidPunctuation || isGenerating}
+                onClick={() => {
+                  setGenerationError("");
+                  setIsGenerating(true);
+                  setGenerateImage(true);
+                }}
                 className="mt-6 w-full rounded-2xl bg-cyan-500 px-6 py-4 text-lg font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                ✨ Generate Professional Visual
+                {isGenerating ? "✨ Generating..." : "✨ Generate Professional Visual"}
               </button>
             </div>
           )}
-
+          {generationError && (
+            <div className="mt-4 rounded-xl border border-red-400/40 bg-red-950/30 px-4 py-3 text-sm text-red-300">
+              ❌ {generationError}
+            </div>
+          )}
           {/* AI Generated Result */}
           {generateImage && publicId && prompt.trim() && (
           <div className="relative">
@@ -283,6 +293,13 @@ const currentFormat = formatConfig[selectedFormat];
           quality="auto"
           format="auto"
           className="h-auto w-full"
+          onLoad={() => setIsGenerating(false)}
+          onError={() => {
+            setIsGenerating(false);
+            setGenerationError(
+              "Something went wrong while generating the image. Please try again."
+            );
+          }}
         />
           </div>
             <div className="mt-4 flex flex-wrap justify-center gap-3">
