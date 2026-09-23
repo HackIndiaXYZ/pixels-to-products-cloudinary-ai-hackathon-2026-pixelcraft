@@ -228,7 +228,7 @@ const currentFormat = formatConfig[selectedFormat];
           )}
           {/* AI Generated Result */}
           {generateImage && publicId && prompt.trim() && (
-          <div className="relative">
+          <div className="relative mt-8 overflow-visible rounded-3xl border border-cyan-400/20 bg-slate-900/70 p-5 shadow-2xl">
             {/* Title + Format Button */}
             <div className="mb-4 flex items-center justify-between gap-4">
               <h2 className="text-2xl font-semibold">
